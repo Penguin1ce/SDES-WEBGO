@@ -3,7 +3,12 @@
 ## 项目简介
 本实验使用 Go 语言配合 Gin 框架实现了简化数据加密标准（Simplified DES，简称 S-DES），并提供了一个直观的网页界面，方便对 8 位明文与 10 位密钥进行加密、解密实验。
 
+![image-20250926124511827](assets/image-20250926124511827.png)
+
+![image-20250926124445311](assets/image-20250926124445311.png)
+
 ## 快速开始
+
 - **运行后端**：在项目根目录执行 `go run main.go`
 - **访问前端**：浏览器打开 `http://localhost:8080`
 - **API 接口**：
@@ -57,11 +62,26 @@ S-DES 是 DES 的教学版本，流程简洁易于理解。下面是加密与解
 ## 目录结构
 ```
 SDES/
-├── main.go          # Gin 服务器与 API 入口
-├── utils/sdes.go    # S-DES 核心算法与工具函数
-├── static/index.html# 网页前端
-├── go.mod           # Go 模块依赖
-└── README.md        # 项目说明
+├── main.go                    # 主程序入口
+├── go.mod                     # Go 模块依赖
+├── go.sum                     # 依赖版本锁定
+├── README.md                  # 项目说明文档
+├── assets/                    # 文档图片
+├── controller/                # 控制器层
+│   ├── encrypt.go            # 加密控制器
+│   └── decrypt.go            # 解密控制器
+├── dto/                       # 数据传输对象
+│   ├── request/              # 请求结构体
+│   │   ├── encrypt.go        # 加密请求
+│   │   └── decrypt.go        # 解密请求
+│   └── response/             # 响应结构体
+│       └── response.go       # 通用响应
+├── router/                    # 路由配置
+│   └── router.go             # 路由定义
+├── static/                    # 静态文件
+│   └── index.html            # 前端页面
+└── utils/                     # 工具包
+    └── sdes.go               # S-DES 核心算法
 ```
 
 ## 参考资料

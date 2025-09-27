@@ -21,21 +21,21 @@ var (
 	// EP 扩展置换 EP
 	EP = [8]int{4, 1, 2, 3, 2, 3, 4, 1}
 
-	// P4 P4置换
-	P4 = [4]int{2, 4, 3, 1}
+	// SPBox P4置换
+	SPBox = [4]int{2, 4, 3, 1}
 
-	// S0 S盒
-	S0 = [4][4]int{
+	// S1 S盒
+	S1 = [4][4]int{
 		{1, 0, 3, 2},
 		{3, 2, 1, 0},
 		{0, 2, 1, 3},
-		{3, 1, 3, 2},
+		{3, 1, 0, 2},
 	}
 
-	S1 = [4][4]int{
+	S2 = [4][4]int{
 		{0, 1, 2, 3},
-		{2, 0, 1, 3},
-		{3, 0, 1, 0},
+		{2, 3, 1, 0},
+		{3, 0, 1, 2},
 		{2, 1, 0, 3},
 	}
 )
@@ -101,12 +101,12 @@ func SBoxSubstitution(input []int) []int {
 	// S0盒替换
 	row0 := left4[0]*2 + left4[3]
 	col0 := left4[1]*2 + left4[2]
-	s0Output := S0[row0][col0]
+	s0Output := S1[row0][col0]
 
 	// S1盒替换
 	row1 := right4[0]*2 + right4[3]
 	col1 := right4[1]*2 + right4[2]
-	s1Output := S1[row1][col1]
+	s1Output := S2[row1][col1]
 
 	// 将结果转换为2位二进制
 	result := make([]int, 4)
@@ -130,7 +130,7 @@ func FFunction(right4 []int, subkey []int) []int {
 	sBoxResult := SBoxSubstitution(xorResult)
 
 	// P4置换
-	p4Result := Permute(sBoxResult, P4[:])
+	p4Result := Permute(sBoxResult, SPBox[:])
 
 	return p4Result
 }

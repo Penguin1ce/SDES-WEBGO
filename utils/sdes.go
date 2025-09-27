@@ -1,5 +1,10 @@
 package utils
 
+import (
+	"fmt"
+	"strings"
+)
+
 // S-DES 算法实现
 // 分组长度：8-bit
 // 密钥长度：10-bit
@@ -232,6 +237,79 @@ func BitsToString(bits []int) string {
 		}
 	}
 	return result
+}
+
+// ByteToBits 将 byte 转换为 8 位比特数组
+func ByteToBits(b byte) []int {
+	bits := make([]int, 8)
+	for i := 0; i < 8; i++ {
+		// 从最高位到最低位填充
+		if (b & (1 << (7 - i))) != 0 {
+			bits[i] = 1
+		} else {
+			bits[i] = 0
+		}
+	}
+	return bits
+}
+
+// BitsToByte 将 8 位比特数组转换为 byte
+func BitsToByte(bits []int) byte {
+	var result byte
+	for i := 0; i < 8 && i < len(bits); i++ {
+		result <<= 1
+		if bits[i] == 1 {
+			result |= 1
+		}
+	}
+	if len(bits) < 8 {
+		result <<= uint8(8 - len(bits))
+	}
+	return result
+}
+
+// EncryptBytes 对 ASCII 字节切片加密
+func EncryptBytes(plaintext []byte, key []int) []byte {
+	ciphertext := make([]byte, len(plaintext))
+	for i, b := range plaintext {
+		bits := ByteToBits(b)
+		encrypted := Encrypt(bits, key)
+		ciphertext[i] = BitsToByte(encrypted)
+	}
+	return ciphertext
+}
+
+// DecryptBytes 对 ASCII 字节切片解密
+func DecryptBytes(ciphertext []byte, key []int) []byte {
+	plaintext := make([]byte, len(ciphertext))
+	for i, b := range ciphertext {
+		bits := ByteToBits(b)
+		decrypted := Decrypt(bits, key)
+		plaintext[i] = BitsToByte(decrypted)
+	}
+	return plaintext
+}
+
+// ASCIIStringToBytes 将字符串转为 ASCII 字节，超出 ASCII 范围时报错
+func ASCIIStringToBytes(s string) ([]byte, error) {
+	bytes := make([]byte, 0, len(s))
+	for _, r := range s {
+		if r > 255 {
+			return nil, fmt.Errorf("字符 %q 超出 ASCII 范围", r)
+		}
+		bytes = append(bytes, byte(r))
+	}
+	return bytes, nil
+}
+
+// BytesToASCIIString 将字节转换为 ASCII 字符串（可能包含控制字符）
+func BytesToASCIIString(b []byte) string {
+	var builder strings.Builder
+	builder.Grow(len(b))
+	for _, bt := range b {
+		builder.WriteRune(rune(bt))
+	}
+	return builder.String()
 }
 
 // IsValidBinary 验证输入是否为有效的二进制字符串

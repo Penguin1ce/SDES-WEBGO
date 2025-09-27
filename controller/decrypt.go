@@ -19,11 +19,10 @@ func DecryptHandler(c *gin.Context) {
 		return
 	}
 
-	// 验证输入
-	if !utils.IsValidBinary(req.Ciphertext, 8) {
+	if req.Ciphertext == "" && req.CiphertextASCII == nil {
 		c.JSON(http.StatusBadRequest, response.DecryptResponse{
 			Success: false,
-			Message: "密文必须是8位二进制字符串（只包含0和1）",
+			Message: "必须提供二进制密文或 ASCII 密文",
 		})
 		return
 	}
@@ -36,9 +35,45 @@ func DecryptHandler(c *gin.Context) {
 		return
 	}
 
+	keyBits := utils.StringToBits(req.Key, 10)
+
+	if req.CiphertextASCII != nil {
+		ciphertextBytes, err := utils.ASCIIStringToBytes(*req.CiphertextASCII)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, response.DecryptResponse{
+				Success: false,
+				Message: err.Error(),
+			})
+			return
+		}
+		if len(ciphertextBytes) == 0 {
+			c.JSON(http.StatusBadRequest, response.DecryptResponse{
+				Success: false,
+				Message: "ASCII 密文不能为空",
+			})
+			return
+		}
+
+		plaintextBytes := utils.DecryptBytes(ciphertextBytes, keyBits)
+
+		c.JSON(http.StatusOK, response.DecryptResponse{
+			PlaintextASCII: utils.BytesToASCIIString(plaintextBytes),
+			Success:        true,
+		})
+		return
+	}
+
+	// 验证输入
+	if !utils.IsValidBinary(req.Ciphertext, 8) {
+		c.JSON(http.StatusBadRequest, response.DecryptResponse{
+			Success: false,
+			Message: "密文必须是8位二进制字符串（只包含0和1）",
+		})
+		return
+	}
+
 	// 转换为位数组
 	ciphertextBits := utils.StringToBits(req.Ciphertext, 8)
-	keyBits := utils.StringToBits(req.Key, 10)
 
 	// 解密
 	plaintextBits := utils.Decrypt(ciphertextBits, keyBits)

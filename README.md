@@ -12,14 +12,21 @@
 - **运行后端**：在项目根目录执行 `go run main.go`
 - **访问前端**：浏览器打开 `http://localhost:8080`
 - **API 接口**：
-  - `POST /api/encrypt`：请求体 `{"plaintext":"8位二进制","key":"10位二进制"}`
-  - `POST /api/decrypt`：请求体 `{"ciphertext":"8位二进制","key":"10位二进制"}`
+  - `POST /api/encrypt`：支持二进制和 ASCII 模式
+    - 二进制：`{"plaintext":"8位二进制","key":"10位二进制"}`
+    - ASCII：`{"plaintext_ascii":"ASCII字符串","key":"10位二进制"}`
+  - `POST /api/decrypt`：支持二进制和 ASCII 模式
+    - 二进制：`{"ciphertext":"8位二进制","key":"10位二进制"}`
+    - ASCII：`{"ciphertext_ascii":"ASCII字符串","key":"10位二进制"}`
 
 
 ## 前端功能
-- 输入验证：限制只能输入指定位数的二进制字符。
-- 一键互填：加密成功后自动将密文和密钥填入解密区域。
-- 实时提示：在输入错误或网络异常时给出友好的反馈。
+- **双模式支持**：支持二进制（0/1）和 ASCII 字符输入模式
+- **输入验证**：限制只能输入指定位数的二进制字符或 ASCII 文本
+- **一键互填**：加密成功后自动将密文和密钥填入解密区域
+- **结果复制**：ASCII 模式下提供一键复制功能，便于粘贴使用
+- **实时提示**：在输入错误或网络异常时给出友好的反馈
+- **LaTeX 公式**：使用 MathJax 渲染 S-DES 算法公式
 
 ## S-DES 算法简单讲解
 S-DES 是 DES 的教学版本，流程简洁易于理解。下面是加密与解密的大致步骤：
@@ -72,13 +79,16 @@ SDES/
 │   └── decrypt.go            # 解密控制器
 ├── dto/                       # 数据传输对象
 │   ├── request/              # 请求结构体
-│   │   ├── encrypt.go        # 加密请求
-│   │   └── decrypt.go        # 解密请求
+│   │   └── request.go
 │   └── response/             # 响应结构体
-│       └── response.go       # 通用响应
+│       └── response.go
 ├── router/                    # 路由配置
-│   └── router.go             # 路由定义
+│   └── router.go
 ├── static/                    # 静态文件
+│   ├── css/                  # 样式文件
+│   │   └── style.css
+│   ├── js/                   # 脚本文件
+│   │   └── app.js
 │   └── index.html            # 前端页面
 └── utils/                     # 工具包
     └── sdes.go               # S-DES 核心算法

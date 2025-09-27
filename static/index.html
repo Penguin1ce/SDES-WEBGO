@@ -5,221 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>S-DES 加密解密系统</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: "Helvetica Neue", Arial, sans-serif;
-            background: #f5f5f5;
-            color: #1f2933;
-        }
-
-        .container {
-            max-width: 960px;
-            margin: 40px auto;
-            padding: 32px;
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 32px;
-        }
-
-        .header h1 {
-            font-size: 28px;
-            font-weight: 600;
-        }
-
-        .header p {
-            margin-top: 8px;
-            color: #4b5563;
-            font-size: 16px;
-        }
-
-        .main-content {
-            display: grid;
-            gap: 24px;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-        }
-
-        .card {
-            border: 1px solid #e5e7eb;
-            border-radius: 10px;
-            background: #fafafa;
-            padding: 24px;
-        }
-
-        .card h2 {
-            font-size: 20px;
-            margin-bottom: 16px;
-            text-align: center;
-        }
-
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 600;
-            color: #374151;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            font-size: 16px;
-            font-family: "Courier New", monospace;
-            letter-spacing: 2px;
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: #2563eb;
-            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
-        }
-
-        .btn {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .btn-encrypt {
-            background: #2563eb;
-            color: #ffffff;
-        }
-
-        .btn-decrypt {
-            background: #16a34a;
-            color: #ffffff;
-        }
-
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .result {
-            margin-top: 16px;
-            padding: 12px;
-            border-radius: 6px;
-            font-family: "Courier New", monospace;
-            font-size: 16px;
-            letter-spacing: 2px;
-            border: 1px solid #d1d5db;
-            background: #f9fafb;
-            display: none;
-            text-align: center;
-        }
-
-        .result.success {
-            border-color: #38bdf8;
-            background: #e0f2fe;
-            color: #0f172a;
-        }
-
-        .result.error {
-            border-color: #f87171;
-            background: #fee2e2;
-            color: #7f1d1d;
-        }
-
-        .info-section {
-            margin-top: 32px;
-            border: 1px solid #e5e7eb;
-            border-radius: 10px;
-            padding: 24px;
-            background: #fafafa;
-        }
-
-        .info-section h3 {
-            font-size: 18px;
-            margin-bottom: 16px;
-        }
-
-        .algorithm-info {
-            display: grid;
-            gap: 16px;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        }
-
-        .info-item {
-            padding: 12px;
-            border-radius: 6px;
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-            text-align: center;
-        }
-
-        .info-item strong {
-            display: block;
-            margin-bottom: 4px;
-            color: #2563eb;
-        }
-
-        .example-section {
-            margin-top: 24px;
-            padding: 16px;
-            border-radius: 6px;
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-        }
-
-        .example-section h4 {
-            margin-bottom: 12px;
-            font-size: 16px;
-        }
-
-        .example-item {
-            margin-bottom: 8px;
-            font-family: "Courier New", monospace;
-            line-height: 1.6;
-        }
-
-        .loading {
-            display: inline-block;
-            width: 18px;
-            height: 18px;
-            border: 2px solid #e5e7eb;
-            border-top: 2px solid #2563eb;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-right: 8px;
-            vertical-align: middle;
-        }
-
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        @media (max-width: 640px) {
-            .container {
-                margin: 16px;
-                padding: 20px;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" defer></script>
+    <script src="/static/js/app.js" defer></script>
 </head>
 
 <body>
@@ -235,8 +23,17 @@
                 <h2>🔐 加密</h2>
                 <form id="encryptForm">
                     <div class="form-group">
+                        <span style="font-weight: 600; color: #374151;">输入模式:</span>
+                        <div class="mode-toggle">
+                            <label><input type="radio" name="encryptMode" value="binary" checked> 0/1</label>
+                            <label><input type="radio" name="encryptMode" value="ascii"> ASCII</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
                         <label for="plaintext">明文 (8位二进制):</label>
                         <input type="text" id="plaintext" placeholder="例如: 10101010" maxlength="8" pattern="[01]{8}">
+                        <input type="text" id="plaintextASCII" placeholder="例如: HELLO" style="display: none;"
+                            maxlength="64">
                     </div>
                     <div class="form-group">
                         <label for="encryptKey">密钥 (10位二进制):</label>
@@ -253,8 +50,17 @@
                 <h2>🔓 解密</h2>
                 <form id="decryptForm">
                     <div class="form-group">
+                        <span style="font-weight: 600; color: #374151;">输入模式:</span>
+                        <div class="mode-toggle">
+                            <label><input type="radio" name="decryptMode" value="binary" checked> 0/1</label>
+                            <label><input type="radio" name="decryptMode" value="ascii"> ASCII</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
                         <label for="ciphertext">密文 (8位二进制):</label>
                         <input type="text" id="ciphertext" placeholder="例如: 01110010" maxlength="8" pattern="[01]{8}">
+                        <input type="text" id="ciphertextASCII" placeholder="例如: HELLO" style="display: none;"
+                            maxlength="64">
                     </div>
                     <div class="form-group">
                         <label for="decryptKey">密钥 (10位二进制):</label>
@@ -279,13 +85,30 @@
                     <strong>密钥长度</strong>
                     10 bits
                 </div>
+                <!--                <div class="info-item">-->
+                <!--                    <strong>加密公式</strong>-->
+                <!--                    C = IP⁻¹(f_k₂(SW(f_k₁(IP(P)))))-->
+                <!--                </div>-->
+                <!--                <div class="info-item">-->
+                <!--                    <strong>解密公式</strong>-->
+                <!--                    P = IP⁻¹(f_k₁(SW(f_k₂(IP(C)))))-->
+                <!--                </div>-->
                 <div class="info-item">
                     <strong>加密公式</strong>
-                    C = IP⁻¹(f_k₂(SW(f_k₁(IP(P)))))
+                    <p>
+                        \[
+                        C = IP^{-1}\Big( f_{k_2}\Big( SW\Big( f_{k_1}\big( IP(P) \big) \Big) \Big) \Big)
+                        \]
+                    </p>
                 </div>
+
                 <div class="info-item">
                     <strong>解密公式</strong>
-                    P = IP⁻¹(f_k₁(SW(f_k₂(IP(C)))))
+                    <p>
+                        \[
+                        P = IP^{-1}\Big( f_{k_1}\Big( SW\Big( f_{k_2}\big( IP(C) \big) \Big) \Big) \Big)
+                        \]
+                    </p>
                 </div>
             </div>
 
@@ -301,150 +124,8 @@
         </div>
     </div>
 
-    <script>
-        // 验证二进制输入
-        function validateBinaryInput(input, length) {
-            const value = input.value.trim();
-            if (value.length !== length) {
-                return `输入必须是${length}位`;
-            }
-            if (!/^[01]+$/.test(value)) {
-                return '只能包含0和1';
-            }
-            return null;
-        }
-
-        // 显示结果
-        function showResult(elementId, message, isSuccess = true) {
-            const resultElement = document.getElementById(elementId);
-            resultElement.textContent = message;
-            resultElement.className = `result ${isSuccess ? 'success' : 'error'}`;
-            resultElement.style.display = 'flex';
-        }
-
-        // 显示加载状态
-        function showLoading(elementId) {
-            const resultElement = document.getElementById(elementId);
-            resultElement.innerHTML = '<div class="loading"></div>处理中...';
-            resultElement.className = 'result';
-            resultElement.style.display = 'flex';
-        }
-
-        // 加密表单处理
-        document.getElementById('encryptForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const plaintext = document.getElementById('plaintext');
-            const key = document.getElementById('encryptKey');
-
-            // 验证输入
-            const plaintextError = validateBinaryInput(plaintext, 8);
-            if (plaintextError) {
-                showResult('encryptResult', `明文错误: ${plaintextError}`, false);
-                return;
-            }
-
-            const keyError = validateBinaryInput(key, 10);
-            if (keyError) {
-                showResult('encryptResult', `密钥错误: ${keyError}`, false);
-                return;
-            }
-
-            showLoading('encryptResult');
-
-            try {
-                const response = await fetch('/api/encrypt', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        plaintext: plaintext.value.trim(),
-                        key: key.value.trim()
-                    })
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    showResult('encryptResult', `密文: ${data.ciphertext}`, true);
-                    // 自动填充到解密表单
-                    document.getElementById('ciphertext').value = data.ciphertext;
-                    document.getElementById('decryptKey').value = key.value.trim();
-                } else {
-                    showResult('encryptResult', `错误: ${data.message}`, false);
-                }
-            } catch (error) {
-                showResult('encryptResult', `网络错误: ${error.message}`, false);
-            }
-        });
-
-        // 解密表单处理
-        document.getElementById('decryptForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const ciphertext = document.getElementById('ciphertext');
-            const key = document.getElementById('decryptKey');
-
-            // 验证输入
-            const ciphertextError = validateBinaryInput(ciphertext, 8);
-            if (ciphertextError) {
-                showResult('decryptResult', `密文错误: ${ciphertextError}`, false);
-                return;
-            }
-
-            const keyError = validateBinaryInput(key, 10);
-            if (keyError) {
-                showResult('decryptResult', `密钥错误: ${keyError}`, false);
-                return;
-            }
-
-            showLoading('decryptResult');
-
-            try {
-                const response = await fetch('/api/decrypt', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        ciphertext: ciphertext.value.trim(),
-                        key: key.value.trim()
-                    })
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    showResult('decryptResult', `明文: ${data.plaintext}`, true);
-                } else {
-                    showResult('decryptResult', `错误: ${data.message}`, false);
-                }
-            } catch (error) {
-                showResult('decryptResult', `网络错误: ${error.message}`, false);
-            }
-        });
-
-        // 输入限制和格式化
-        document.querySelectorAll('input[pattern]').forEach(input => {
-            input.addEventListener('input', (e) => {
-                // 只允许输入0和1
-                e.target.value = e.target.value.replace(/[^01]/g, '');
-            });
-
-            input.addEventListener('paste', (e) => {
-                e.preventDefault();
-                const paste = (e.clipboardData || window.clipboardData).getData('text');
-                const cleanPaste = paste.replace(/[^01]/g, '');
-                e.target.value = cleanPaste.substring(0, e.target.maxLength);
-            });
-        });
-
-        // 页面加载完成后的初始化
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('S-DES 加密解密系统已加载');
-        });
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" defer></script>
+    <script src="/static/js/app.js" defer></script>
 </body>
 
 </html>

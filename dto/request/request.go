@@ -2,12 +2,14 @@ package request
 
 // DecryptRequest API 请求结构体
 type DecryptRequest struct {
-	Ciphertext string `json:"ciphertext" binding:"required"`
-	Key        string `json:"key" binding:"required"`
+	Ciphertext      string  `json:"ciphertext"`
+	CiphertextASCII *string `json:"ciphertext_ascii"`
+	Key             string  `json:"key" binding:"required"`
 }
 
 // EncryptRequest API 请求结构体
 type EncryptRequest struct {
-	Plaintext string `json:"plaintext" binding:"required"`
-	Key       string `json:"key" binding:"required"`
+	Plaintext      string  `json:"plaintext"`
+	PlaintextASCII *string `json:"plaintext_ascii"`
+	Key            string  `json:"key" binding:"required"`
 }

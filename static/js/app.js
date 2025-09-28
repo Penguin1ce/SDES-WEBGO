@@ -107,6 +107,66 @@ function buildAsciiMessage(label, content) {
     return container;
 }
 
+// 构建暴力破解结果显示
+function buildBruteForceResult(data) {
+    const container = document.createElement('div');
+    container.className = 'brute-force-results';
+
+    // 成功消息
+    const message = document.createElement('div');
+    message.className = 'result-message';
+    message.innerHTML = `<strong>${data.message}</strong>`;
+    container.appendChild(message);
+
+    if (data.keys && data.keys.length > 0) {
+        // 密钥列表
+        const keysList = document.createElement('div');
+        keysList.className = 'keys-list';
+        
+        const listTitle = document.createElement('div');
+        listTitle.innerHTML = '<strong>找到的密钥：</strong>';
+        listTitle.style.marginBottom = '8px';
+        keysList.appendChild(listTitle);
+
+        data.keys.forEach((key, index) => {
+            const keyItem = document.createElement('div');
+            keyItem.className = 'key-item';
+            
+            const keyBinary = document.createElement('span');
+            keyBinary.className = 'key-binary';
+            keyBinary.textContent = key;
+            
+            const keyDecimal = document.createElement('span');
+            keyDecimal.className = 'key-decimal';
+            keyDecimal.textContent = `十进制: ${data.keys_decimal[index]}`;
+            
+            keyItem.appendChild(keyBinary);
+            keyItem.appendChild(keyDecimal);
+            keysList.appendChild(keyItem);
+        });
+
+        container.appendChild(keysList);
+
+        // 统计信息
+        const statsInfo = document.createElement('div');
+        statsInfo.className = 'stats-info';
+        
+        const countSpan = document.createElement('span');
+        countSpan.className = 'stats-count';
+        countSpan.textContent = `找到 ${data.key_count} 个密钥`;
+        
+        const timeSpan = document.createElement('span');
+        timeSpan.className = 'stats-time';
+        timeSpan.textContent = `耗时: ${data.time}`;
+        
+        statsInfo.appendChild(countSpan);
+        statsInfo.appendChild(timeSpan);
+        container.appendChild(statsInfo);
+    }
+
+    return container;
+}
+
 function showResult(elementId, content, isSuccess = true) {
     const resultElement = document.getElementById(elementId);
     resultElement.innerHTML = '';
@@ -126,149 +186,216 @@ function showLoading(elementId) {
     resultElement.style.display = 'flex';
 }
 
-document.getElementById('encryptForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
+// 将在DOMContentLoaded中绑定
+function bindEncryptForm() {
+    const form = document.getElementById('encryptForm');
+    if (!form) return;
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-    const plaintext = document.getElementById('plaintext');
-    const plaintextASCII = document.getElementById('plaintextASCII');
-    const key = document.getElementById('encryptKey');
-    const mode = document.querySelector('input[name="encryptMode"]:checked').value;
+        const plaintext = document.getElementById('plaintext');
+        const plaintextASCII = document.getElementById('plaintextASCII');
+        const key = document.getElementById('encryptKey');
+        const mode = document.querySelector('input[name="encryptMode"]:checked').value;
 
-    const keyValue = key.value.trim();
-    const keyError = validateBinaryInput(keyValue, 10);
-    if (keyError) {
-        showResult('encryptResult', `密钥错误: ${keyError}`, false);
-        return;
-    }
-
-    const payload = { key: keyValue };
-
-    if (mode === 'ascii') {
-        const asciiValue = plaintextASCII.value;
-        if (!asciiValue) {
-            showResult('encryptResult', '明文错误: ASCII 文本不能为空', false);
+        const keyValue = key.value.trim();
+        const keyError = validateBinaryInput(keyValue, 10);
+        if (keyError) {
+            showResult('encryptResult', `密钥错误: ${keyError}`, false);
             return;
         }
-        payload.plaintext_ascii = asciiValue;
-    } else {
-        const binaryValue = plaintext.value.trim();
-        const plaintextError = validateBinaryInput(binaryValue, 8);
-        if (plaintextError) {
-            showResult('encryptResult', `明文错误: ${plaintextError}`, false);
-            return;
+
+        const payload = { key: keyValue };
+
+        if (mode === 'ascii') {
+            const asciiValue = plaintextASCII.value;
+            if (!asciiValue) {
+                showResult('encryptResult', '明文错误: ASCII 文本不能为空', false);
+                return;
+            }
+            payload.plaintext_ascii = asciiValue;
+        } else {
+            const binaryValue = plaintext.value.trim();
+            const plaintextError = validateBinaryInput(binaryValue, 8);
+            if (plaintextError) {
+                showResult('encryptResult', `明文错误: ${plaintextError}`, false);
+                return;
+            }
+            payload.plaintext = binaryValue;
         }
-        payload.plaintext = binaryValue;
-    }
 
-    showLoading('encryptResult');
+        showLoading('encryptResult');
 
-    try {
-        const response = await fetch('/api/encrypt', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(payload)
-        });
+        try {
+            const response = await fetch('/api/encrypt', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload)
+            });
 
-        const data = await response.json();
+            const data = await response.json();
 
-        if (data.success) {
+            if (data.success) {
             if (data.ciphertext_ascii) {
                 showResult('encryptResult', buildAsciiMessage('ASCII 密文', data.ciphertext_ascii), true);
-                document.getElementById('ciphertextASCII').value = data.ciphertext_ascii;
-                document.querySelector('input[name="decryptMode"][value="ascii"]').checked = true;
-                toggleInputMode('decryptForm', 'ascii');
             } else {
                 showResult('encryptResult', `密文: ${data.ciphertext}`, true);
-                document.getElementById('ciphertext').value = data.ciphertext;
-                document.querySelector('input[name="decryptMode"][value="binary"]').checked = true;
-                toggleInputMode('decryptForm', 'binary');
             }
-            document.getElementById('decryptKey').value = keyValue;
+            } else {
+                showResult('encryptResult', `错误: ${data.message}`, false);
+            }
+        } catch (error) {
+            showResult('encryptResult', `网络错误: ${error.message}`, false);
+        }
+    });
+}
+
+// 将在DOMContentLoaded中绑定
+function bindDecryptForm() {
+    const form = document.getElementById('decryptForm');
+    if (!form) return;
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const ciphertext = document.getElementById('ciphertext');
+        const ciphertextASCII = document.getElementById('ciphertextASCII');
+        const key = document.getElementById('decryptKey');
+        const mode = document.querySelector('input[name="decryptMode"]:checked').value;
+
+        const keyValue = key.value.trim();
+        const keyError = validateBinaryInput(keyValue, 10);
+        if (keyError) {
+            showResult('decryptResult', `密钥错误: ${keyError}`, false);
+            return;
+        }
+
+        const payload = { key: keyValue };
+
+        if (mode === 'ascii') {
+            const asciiValue = ciphertextASCII.value;
+            if (!asciiValue) {
+                showResult('decryptResult', '密文错误: ASCII 文本不能为空', false);
+                return;
+            }
+            payload.ciphertext_ascii = asciiValue;
         } else {
-            showResult('encryptResult', `错误: ${data.message}`, false);
+            const binaryValue = ciphertext.value.trim();
+            const ciphertextError = validateBinaryInput(binaryValue, 8);
+            if (ciphertextError) {
+                showResult('decryptResult', `密文错误: ${ciphertextError}`, false);
+                return;
+            }
+            payload.ciphertext = binaryValue;
         }
-    } catch (error) {
-        showResult('encryptResult', `网络错误: ${error.message}`, false);
-    }
-});
 
-document.getElementById('decryptForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
+        showLoading('decryptResult');
 
-    const ciphertext = document.getElementById('ciphertext');
-    const ciphertextASCII = document.getElementById('ciphertextASCII');
-    const key = document.getElementById('decryptKey');
-    const mode = document.querySelector('input[name="decryptMode"]:checked').value;
+        try {
+            const response = await fetch('/api/decrypt', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload)
+            });
 
-    const keyValue = key.value.trim();
-    const keyError = validateBinaryInput(keyValue, 10);
-    if (keyError) {
-        showResult('decryptResult', `密钥错误: ${keyError}`, false);
-        return;
-    }
+            const data = await response.json();
 
-    const payload = { key: keyValue };
+            if (data.success) {
+                if (data.plaintext_ascii) {
+                    showResult('decryptResult', buildAsciiMessage('ASCII 明文', data.plaintext_ascii), true);
+                } else {
+                    showResult('decryptResult', `明文: ${data.plaintext}`, true);
+                }
+            } else {
+                showResult('decryptResult', `错误: ${data.message}`, false);
+            }
+        } catch (error) {
+            showResult('decryptResult', `网络错误: ${error.message}`, false);
+        }
+    });
+}
 
-    if (mode === 'ascii') {
-        const asciiValue = ciphertextASCII.value;
-        if (!asciiValue) {
-            showResult('decryptResult', '密文错误: ASCII 文本不能为空', false);
+// 将在DOMContentLoaded中绑定
+function bindBruteForceForm() {
+    const form = document.getElementById('bruteForceForm');
+    if (!form) return;
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const plaintext = document.getElementById('brutePlaintext');
+        const ciphertext = document.getElementById('bruteCiphertext');
+
+        const plaintextValue = plaintext.value.trim();
+        const ciphertextValue = ciphertext.value.trim();
+
+        // 验证输入
+        const plaintextError = validateBinaryInput(plaintextValue, 8);
+        if (plaintextError) {
+            showResult('bruteForceResult', `明文错误: ${plaintextError}`, false);
             return;
         }
-        payload.ciphertext_ascii = asciiValue;
-    } else {
-        const binaryValue = ciphertext.value.trim();
-        const ciphertextError = validateBinaryInput(binaryValue, 8);
+
+        const ciphertextError = validateBinaryInput(ciphertextValue, 8);
         if (ciphertextError) {
-            showResult('decryptResult', `密文错误: ${ciphertextError}`, false);
+            showResult('bruteForceResult', `密文错误: ${ciphertextError}`, false);
             return;
         }
-        payload.ciphertext = binaryValue;
-    }
 
-    showLoading('decryptResult');
+        const payload = {
+            plaintext: plaintextValue,
+            ciphertext: ciphertextValue
+        };
 
-    try {
-        const response = await fetch('/api/decrypt', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(payload)
+        showLoading('bruteForceResult');
+
+        try {
+            const response = await fetch('/api/blasting', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                showResult('bruteForceResult', buildBruteForceResult(data), true);
+            } else {
+                showResult('bruteForceResult', `${data.message} (耗时: ${data.time || '未知'})`, false);
+            }
+        } catch (error) {
+            showResult('bruteForceResult', `网络错误: ${error.message}`, false);
+        }
+    });
+}
+
+function bindBinaryInputSanitizer() {
+    document.querySelectorAll('input[pattern]').forEach(input => {
+        input.addEventListener('input', (e) => {
+            e.target.value = e.target.value.replace(/[^01]/g, '');
         });
 
-        const data = await response.json();
-
-        if (data.success) {
-            if (data.plaintext_ascii) {
-                showResult('decryptResult', buildAsciiMessage('ASCII 明文', data.plaintext_ascii), true);
-            } else {
-                showResult('decryptResult', `明文: ${data.plaintext}`, true);
-            }
-        } else {
-            showResult('decryptResult', `错误: ${data.message}`, false);
-        }
-    } catch (error) {
-        showResult('decryptResult', `网络错误: ${error.message}`, false);
-    }
-});
-
-document.querySelectorAll('input[pattern]').forEach(input => {
-    input.addEventListener('input', (e) => {
-        e.target.value = e.target.value.replace(/[^01]/g, '');
+        input.addEventListener('paste', (e) => {
+            e.preventDefault();
+            const paste = (e.clipboardData || window.clipboardData).getData('text');
+            const cleanPaste = paste.replace(/[^01]/g, '');
+            e.target.value = cleanPaste.substring(0, e.target.maxLength);
+        });
     });
-
-    input.addEventListener('paste', (e) => {
-        e.preventDefault();
-        const paste = (e.clipboardData || window.clipboardData).getData('text');
-        const cleanPaste = paste.replace(/[^01]/g, '');
-        e.target.value = cleanPaste.substring(0, e.target.maxLength);
-    });
-});
+}
 
 document.addEventListener('DOMContentLoaded', () => {
+    // 绑定表单事件
+    bindEncryptForm();
+    bindDecryptForm();
+    bindBruteForceForm();
+    bindBinaryInputSanitizer();
+    
+    // 绑定模式切换事件
     document.querySelectorAll('input[name="encryptMode"]').forEach(radio => {
         radio.addEventListener('change', (event) => {
             toggleInputMode('encryptForm', event.target.value);

@@ -26,7 +26,7 @@ var (
 	// EP 扩展置换 EP
 	EP = [8]int{4, 1, 2, 3, 2, 3, 4, 1}
 
-	// SPBox P4置换
+	// SPBox SPBox置换
 	SPBox = [4]int{2, 4, 3, 1}
 
 	// S1 S盒
@@ -323,4 +323,14 @@ func IsValidBinary(s string, expectedLength int) bool {
 		}
 	}
 	return true
+}
+
+// IntTo10BitKey 将十进制整数转换为10位二进制密钥数组
+func IntTo10BitKey(num int) []int {
+	key := make([]int, 10)
+	for i := 9; i >= 0; i-- {
+		key[i] = num & 1
+		num >>= 1
+	}
+	return key
 }

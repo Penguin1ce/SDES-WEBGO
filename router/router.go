@@ -33,5 +33,6 @@ func InitRouter(r *gin.Engine) {
 	{
 		baseApi.POST("/encrypt", controller.EncryptHandler)
 		baseApi.POST("/decrypt", controller.DecryptHandler)
+		baseApi.POST("/blasting", controller.BlastingHandler)
 	}
 }

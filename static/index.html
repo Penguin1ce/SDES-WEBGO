@@ -18,58 +18,77 @@
         </div>
 
         <div class="main-content">
-            <!-- 加密卡片 -->
-            <div class="card">
-                <h2>🔐 加密</h2>
-                <form id="encryptForm">
-                    <div class="form-group">
-                        <span style="font-weight: 600; color: #374151;">输入模式:</span>
-                        <div class="mode-toggle">
-                            <label><input type="radio" name="encryptMode" value="binary" checked> 0/1</label>
-                            <label><input type="radio" name="encryptMode" value="ascii"> ASCII</label>
+            <div class="main-content-top">
+                <!-- 加密卡片 -->
+                <div class="card">
+                    <h2>🔐 加密</h2>
+                    <form id="encryptForm">
+                        <div class="form-group">
+                            <span style="font-weight: 600; color: #374151;">输入模式:</span>
+                            <div class="mode-toggle">
+                                <label><input type="radio" name="encryptMode" value="binary" checked> 0/1</label>
+                                <label><input type="radio" name="encryptMode" value="ascii"> ASCII</label>
+                            </div>
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="plaintext">明文 (8位二进制):</label>
-                        <input type="text" id="plaintext" placeholder="例如: 10101010" maxlength="8" pattern="[01]{8}">
-                        <input type="text" id="plaintextASCII" placeholder="例如: HELLO" style="display: none;"
-                            maxlength="64">
-                    </div>
-                    <div class="form-group">
-                        <label for="encryptKey">密钥 (10位二进制):</label>
-                        <input type="text" id="encryptKey" placeholder="例如: 1010000010" maxlength="10"
-                            pattern="[01]{10}">
-                    </div>
-                    <button type="submit" class="btn btn-encrypt">加密</button>
-                    <div id="encryptResult" class="result" style="display: none;"></div>
-                </form>
+                        <div class="form-group">
+                            <label for="plaintext">明文 (8位二进制):</label>
+                            <input type="text" id="plaintext" maxlength="8" pattern="[01]{8}">
+                            <input type="text" id="plaintextASCII" style="display: none;" maxlength="64">
+                        </div>
+                        <div class="form-group">
+                            <label for="encryptKey">密钥 (10位二进制):</label>
+                            <input type="text" id="encryptKey" maxlength="10"
+                                pattern="[01]{10}">
+                        </div>
+                        <button type="submit" class="btn btn-encrypt">加密</button>
+                        <div id="encryptResult" class="result" style="display: none;"></div>
+                    </form>
+                </div>
+
+                <!-- 解密卡片 -->
+                <div class="card">
+                    <h2>🔓 解密</h2>
+                    <form id="decryptForm">
+                        <div class="form-group">
+                            <span style="font-weight: 600; color: #374151;">输入模式:</span>
+                            <div class="mode-toggle">
+                                <label><input type="radio" name="decryptMode" value="binary" checked> 0/1</label>
+                                <label><input type="radio" name="decryptMode" value="ascii"> ASCII</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="ciphertext">密文 (8位二进制):</label>
+                            <input type="text" id="ciphertext" maxlength="8" pattern="[01]{8}">
+                            <input type="text" id="ciphertextASCII" style="display: none;" maxlength="64">
+                        </div>
+                        <div class="form-group">
+                            <label for="decryptKey">密钥 (10位二进制):</label>
+                            <input type="text" id="decryptKey" maxlength="10"
+                                pattern="[01]{10}">
+                        </div>
+                        <button type="submit" class="btn btn-decrypt">解密</button>
+                        <div id="decryptResult" class="result" style="display: none;"></div>
+                    </form>
+                </div>
             </div>
 
-            <!-- 解密卡片 -->
-            <div class="card">
-                <h2>🔓 解密</h2>
-                <form id="decryptForm">
-                    <div class="form-group">
-                        <span style="font-weight: 600; color: #374151;">输入模式:</span>
-                        <div class="mode-toggle">
-                            <label><input type="radio" name="decryptMode" value="binary" checked> 0/1</label>
-                            <label><input type="radio" name="decryptMode" value="ascii"> ASCII</label>
+            <div class="brute-force-container">
+                <!-- 暴力破解卡片 -->
+                <div class="card brute-force-card">
+                    <h2>🔥 暴力破解</h2>
+                    <form id="bruteForceForm">
+                        <div class="form-group">
+                            <label for="brutePlaintext">明文 (8位二进制):</label>
+                            <input type="text" id="brutePlaintext" maxlength="8" pattern="[01]{8}">
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="ciphertext">密文 (8位二进制):</label>
-                        <input type="text" id="ciphertext" placeholder="例如: 01110010" maxlength="8" pattern="[01]{8}">
-                        <input type="text" id="ciphertextASCII" placeholder="例如: HELLO" style="display: none;"
-                            maxlength="64">
-                    </div>
-                    <div class="form-group">
-                        <label for="decryptKey">密钥 (10位二进制):</label>
-                        <input type="text" id="decryptKey" placeholder="例如: 1010000010" maxlength="10"
-                            pattern="[01]{10}">
-                    </div>
-                    <button type="submit" class="btn btn-decrypt">解密</button>
-                    <div id="decryptResult" class="result" style="display: none;"></div>
-                </form>
+                        <div class="form-group">
+                            <label for="bruteCiphertext">密文 (8位二进制):</label>
+                            <input type="text" id="bruteCiphertext" maxlength="8" pattern="[01]{8}">
+                        </div>
+                        <button type="submit" class="btn btn-brute-force">开始暴力破解</button>
+                        <div id="bruteForceResult" class="result" style="display: none;"></div>
+                    </form>
+                </div>
             </div>
         </div>
 
@@ -120,12 +139,13 @@
                 <div class="example-item">
                     <strong>密钥示例:</strong> 1010000010, 0110011001, 1111100000
                 </div>
+                <div class="example-item">
+                    <strong>暴力破解示例:</strong> 明文: 10101010, 密文: 01110010
+                </div>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" defer></script>
-    <script src="/static/js/app.js" defer></script>
 </body>
 
 </html>

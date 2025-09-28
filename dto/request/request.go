@@ -13,3 +13,8 @@ type EncryptRequest struct {
 	PlaintextASCII *string `json:"plaintext_ascii"`
 	Key            string  `json:"key" binding:"required"`
 }
+
+type BlastingRequest struct {
+	Plaintext  string `json:"plaintext"`
+	Ciphertext string `json:"ciphertext"`
+}

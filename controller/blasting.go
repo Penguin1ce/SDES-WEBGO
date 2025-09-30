@@ -51,8 +51,8 @@ func BlastingHandler(c *gin.Context) {
 	log.Println("开始暴力破解...")
 
 	// 用于收集所有匹配的密钥
-	var foundKeys []string
-	var foundKeysDecimal []int
+	var foundKeys []string     // 二进制表示
+	var foundKeysDecimal []int // 十进制表示
 
 	// 暴力破解：尝试所有可能的10位密钥（0-1023）
 	for i := 0; i < 1024; i++ {

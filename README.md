@@ -1,33 +1,82 @@
-# S-DES 加解密 WEB-GO
+# S-DES WEB-GO 加解密实验一 
 
-
-
-## 项目简介
+## 简介
 
 本实验使用 Go 语言配合 Gin 框架实现了简化数据加密标准（Simplified DES，简称 S-DES），并提供了一个直观的网页界面，方便对 8 位明文与 10 位密钥进行加密、解密实验。
 
-![image-20250926124511827](assets/image-20250926124511827.png)
+<img src="doc/assets/image-20250930145658434.png" alt="image-20250930145658434" style="zoom:45%;" />
 
-<img src="assets/image-20250928151701125.png" alt="image-20250928151701125" style="zoom:52%;" />
+<img src="doc/assets/image-20250930145809432.png" alt="image-20250930145809432" style="zoom:45%;" />
 
-<img src="assets/image-20250928151937604.png" alt="image-20250928151937604" style="zoom:52%;" />
+<img src="doc/assets/image-20250930145936275.png" alt="image-20250930145936275" style="zoom:45%;" />
 
 
+
+## 第一关
+
+根据S-DES算法编写和调试程序，提供GUI解密支持用户交互。输入可以是8bit的数据和10bit的密钥，输出是8bit的密文。
+
+![image-20250930143740877](doc/assets/image-20250930143740877.png)
+
+
+
+## 第二关
+
+考虑到是**算法标准**，所有人在编写程序的时候需要使用相同算法流程和转换单元(P-Box、S-Box等)，以保证算法和程序在异构的系统或平台上都可以正常运行。
+
+设有A和B两组位同学(选择相同的密钥K)；则A、B组同学编写的程序对明文P进行加密得到相同的密文C；或者B组同学接收到A组程序加密的密文C，使用B组程序进行解密可得到与A相同的P。
+
+参考别人的明文01000001，密钥1111111111，加密后的01110100在我们的程序上成功解密为01000001
+
+
+
+## 第三关
+
+考虑到向实用性扩展，加密算法的数据输入可以是ASII编码字符串(分组为1 Byte)，对应地输出也可以是ACII字符串(很可能是乱码)。
+
+在明文为`Iloveyou`，密钥为`1111111111`的加密，解密结果如下。
+
+![image-20250930143415646](doc/assets/image-20250930143415646.png)
+
+
+
+## 第四关
+
+假设你找到了使用相同密钥的明、密文对(一个或多个)，请尝试使用暴力破解的方法找到正确的密钥Key。在编写程序时，你也可以考虑使用多线程的方式提升破解的效率。请设定时间戳，用视频或动图展示你在多长时间内完成了暴力破解。
+
+在明文为`01000001`，密文为`01110100`，我们暴力破解了1024个密钥，结果如下，时间消耗为2.11ms
+
+后端显示：
+
+<img src="doc/assets/image-20250930144157370.png" alt="image-20250930144157370" style="zoom:70%;" />
+
+Web显示：
+
+![image-20250930144020832](doc/assets/image-20250930144020832.png)
+
+## 第五关
+
+根据第4关的结果，进一步分析，对于你随机选择的一个明密文对，是不是有不止一个密钥Key？进一步扩展，对应明文空间任意给定的明文分组$P_n$，是否会出现选择不同的密钥$K_{i}\ne K_{j}$加密得到相同密文$C_n$的情况？
+
+- **问题一：** 随机选择的明密文对下，存在 6 个可能的密钥 Key。
+- **问题二：** 对于任意明文分组 $P_n$，确实可能出现不同密钥 $K_{i}\ne K_{j}$ 加密得到同一密文 $C_n$ 的情况。
+
+当密钥为`1111111111`，明文`01000001`加密为`01110100`
+
+<img src="doc/assets/image-20250930145305102.png" alt="image-20250930145305102" style="zoom:50%;" />
+
+当密钥为`0010010000`，明文`01000001`同样的被加密为`01110100`
+
+<img src="doc/assets/image-20250930145018209.png" alt="image-20250930145018209" style="zoom:50%;" />
 
 ## 快速开始
 
-- **运行后端**：在项目根目录执行 `go run main.go`
-- **访问前端**：浏览器打开 `http://localhost:8080`
-- **API 接口**：
-  - `POST /api/encrypt`：支持二进制和 ASCII 模式
-    - 二进制：`{"plaintext":"8位二进制","key":"10位二进制"}`
-    - ASCII：`{"plaintext_ascii":"ASCII字符串","key":"10位二进制"}`
-  - `POST /api/decrypt`：支持二进制和 ASCII 模式
-    - 二进制：`{"ciphertext":"8位二进制","key":"10位二进制"}`
-    - ASCII：`{"ciphertext_ascii":"ASCII字符串","key":"10位二进制"}`
-  - `POST /api/blasting`：暴力破解接口
-    - 请求：`{"plaintext":"8位二进制","ciphertext":"8位二进制"}`
-    - 响应：返回所有可能的密钥列表及执行时间
+- **启动后端**：在项目根目录运行 `go run main.go`
+- **打开前端**：浏览器访问 `http://localhost:8080`
+- **核心接口**：
+  - `POST /api/encrypt`：`{"plaintext":"8位","key":"10位"}` 或 `{"plaintext_ascii":"文本","key":"10位"}`
+  - `POST /api/decrypt`：`{"ciphertext":"8位","key":"10位"}` 或 `{"ciphertext_ascii":"文本","key":"10位"}`
+  - `POST /api/blasting`：`{"plaintext":"8位","ciphertext":"8位"}` 返回所有可能密钥及耗时
 
 
 
@@ -80,172 +129,27 @@ S-DES 是 DES 的教学版本，流程简洁易于理解。下面是加密与解
 ## 目录结构
 ```
 SDES/
-├── main.go                    # 主程序入口
-├── go.mod                     # Go 模块依赖
-├── go.sum                     # 依赖版本锁定
-├── README.md                  # 项目说明文档
-├── assets/                    # 文档图片
-│   ├── image-20250926124445311.png
-│   └── image-20250926124511827.png
-├── controller/                # 控制器层
-│   ├── encrypt.go            # 加密接口
-│   ├── decrypt.go            # 解密接口
-│   └── blasting.go           # 暴力破解接口
-├── dto/                       # 数据传输对象
-│   ├── request/              # 请求结构体
-│   │   └── request.go
-│   └── response/             # 响应结构体
-│       └── response.go
-├── router/                    # 路由配置
-│   └── router.go
-├── static/                    # 前端静态资源
-│   ├── css/
-│   │   └── style.css         # 页面样式
-│   ├── js/
-│   │   └── app.js            # 交互脚本
-│   └── index.html            # 主页面
-└── utils/                     # 工具包与算法实现
-    ├── sdes.go               # S-DES 核心算法
-    └── my_test.go            # S-DES 算法测试
+├── main.go          # Gin 入口
+├── controller/      # 加解密与暴力破解接口
+├── dto/             # 请求/响应结构体
+├── doc/             # 项目文档图片地址
+├── router/          # 路由注册
+├── utils/           # S-DES 算法与工具函数
+└── static/          # 前端静态资源
 ```
 
 
 
 ## 后端流程图
 
-### 1. 数据接收与解析
-当前端发送ASCII码数据时，后端通过以下步骤接收：
-
-```go
-// 在 controller/encrypt.go 或 controller/decrypt.go 中
-var req request.EncryptRequest  // 或 DecryptRequest
-if err := c.ShouldBindJSON(&req); err != nil {
-    // 处理JSON解析错误
-}
-```
-
-前端发送的数据格式：
-```json
-{
-    "plaintext_ascii": "Hello",  // ASCII字符串
-    "key": "1010101010"          // 10位二进制密钥
-}
-```
-
-### 2. 数据验证
-后端对接收到的ASCII数据进行验证：
-
-```go
-// 检查是否提供了ASCII数据
-if req.PlaintextASCII != nil {
-    // 验证密钥格式
-    if !utils.IsValidBinary(req.Key, 10) {
-        // 返回错误：密钥必须是10位二进制
-    }
-    
-    // 验证ASCII数据不为空
-    if len(plaintextBytes) == 0 {
-        // 返回错误：ASCII明文不能为空
-    }
-}
-```
-
-### 3. ASCII字符串转换为字节数组
-使用 `ASCIIStringToBytes` 函数将ASCII字符串转换为字节数组：
-
-```go
-plaintextBytes, err := utils.ASCIIStringToBytes(*req.PlaintextASCII)
-```
-
-这个函数的核心逻辑：
-```go
-func ASCIIStringToBytes(s string) ([]byte, error) {
-    bytes := make([]byte, 0, len(s))
-    for _, r := range s {
-        if r > 255 {  // 检查是否超出ASCII范围
-            return nil, fmt.Errorf("字符 %q 超出 ASCII 范围", r)
-        }
-        bytes = append(bytes, byte(r))  // 转换为字节
-    }
-    return bytes, nil
-}
-```
-
-### 4. 密钥处理
-将10位二进制密钥字符串转换为位数组：
-
-```go
-keyBits := utils.StringToBits(req.Key, 10)
-```
-
-### 5. 加密/解密处理
-对每个字节进行S-DES加密或解密：
-
-**加密过程：**
-```go
-ciphertextBytes := utils.EncryptBytes(plaintextBytes, keyBits)
-```
-
-**解密过程：**
-```go
-plaintextBytes := utils.DecryptBytes(ciphertextBytes, keyBits)
-```
-
-`EncryptBytes` 函数的处理逻辑：
-```go
-func EncryptBytes(plaintext []byte, key []int) []byte {
-    ciphertext := make([]byte, len(plaintext))
-    for i, b := range plaintext {
-        bits := ByteToBits(b)           // 将字节转换为8位比特数组
-        encrypted := Encrypt(bits, key) // 使用S-DES算法加密
-        ciphertext[i] = BitsToByte(encrypted) // 将加密后的比特转换回字节
-    }
-    return ciphertext
-}
-```
-
-### 6. 字节数组转换回ASCII字符串
-使用 `BytesToASCIIString` 函数将处理后的字节数组转换回ASCII字符串：
-
-```go
-result := utils.BytesToASCIIString(ciphertextBytes)
-```
-
-### 7. 返回响应
-将处理结果封装成JSON响应返回给前端：
-
-```go
-c.JSON(http.StatusOK, response.EncryptResponse{
-    CiphertextASCII: utils.BytesToASCIIString(ciphertextBytes),
-    Success:         true,
-})
-```
-
-## 关键处理步骤总结
-
-1. **接收** → JSON解析ASCII字符串和密钥
-2. **验证** → 检查数据格式和有效性
-3. **转换** → ASCII字符串 → 字节数组
-4. **处理** → 对每个字节进行S-DES加密/解密
-5. **转换** → 字节数组 → ASCII字符串
-6. **返回** → JSON响应给前端
-
-这种设计允许处理任意长度的ASCII文本，通过逐字节处理的方式实现了对多字节数据的加密和解密功能。
-
-## ASCII数据处理流程图
+1. **接收请求**：`controller` 绑定 JSON，识别二进制或 ASCII 字段。
+2. **数据校验**：校验 10 位二进制密钥与输入不能为空；ASCII 超出范围直接报错。
+3. **数据转换**：字符串转字节，调用 `utils.StringToBits` 生成密钥位数组。
+4. **算法处理**：逐字节执行 `utils.Encrypt` / `utils.Decrypt`，得到新字节序列。
+5. **结果封装**：字节转回二进制或 ASCII 字符串，返回 JSON 响应（含成功标记与耗时等信息）。
 
 ```
-前端ASCII输入 → JSON请求 → 后端接收
-     ↓
-数据验证（密钥格式、ASCII范围）
-     ↓
-ASCII字符串 → 字节数组转换
-     ↓
-逐字节S-DES加密/解密
-     ↓
-字节数组 → ASCII字符串转换
-     ↓
-JSON响应 → 前端显示结果
+请求 JSON → 参数校验 → 字符串/位转换 → S-DES 处理 → JSON 响应
 ```
 
 ## 参考资料

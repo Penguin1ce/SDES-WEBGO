@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -51,34 +52,55 @@ func BlastingHandler(c *gin.Context) {
 	log.Println("开始暴力破解...")
 
 	// 用于收集所有匹配的密钥
-	var foundKeys []string     // 二进制表示
-	var foundKeysDecimal []int // 十进制表示
+	var (
+		foundKeys        []string
+		foundKeysDecimal []int
+	)
+	var (
+		wg sync.WaitGroup
+		mu sync.Mutex
+	)
 
-	// 暴力破解：尝试所有可能的10位密钥（0-1023）
-	for i := 0; i < 1024; i++ {
-		// 将十进制密钥转换为10位二进制数组
-		keyBits := utils.IntTo10BitKey(i)
+	// 用两个线程进行破解
+	ranges := [][2]int{{0, 512}, {512, 1024}}
 
-		// 使用当前密钥加密明文
-		encryptedBits := utils.Encrypt(plaintextBits, keyBits)
+	for _, r := range ranges {
+		start, end := r[0], r[1]
+		wg.Add(1)
+		go func(start, end int) {
+			defer wg.Done()
 
-		// 检查加密结果是否与给定的密文匹配
-		match := true
-		for j := 0; j < 8; j++ {
-			if encryptedBits[j] != ciphertextBits[j] {
-				match = false
-				break
+			localKeys := make([]string, 0, 4)
+			localKeysDecimal := make([]int, 0, 4)
+
+			for i := start; i < end; i++ {
+				keyBits := utils.IntTo10BitKey(i)
+				encryptedBits := utils.Encrypt(plaintextBits, keyBits)
+
+				match := true
+				for j := 0; j < 8; j++ {
+					if encryptedBits[j] != ciphertextBits[j] {
+						match = false
+						break
+					}
+				}
+
+				if match {
+					keyString := utils.BitsToString(keyBits)
+					localKeys = append(localKeys, keyString)
+					localKeysDecimal = append(localKeysDecimal, i)
+					log.Printf("找到匹配密钥：%s（十进制：%d）", keyString, i)
+				}
 			}
-		}
 
-		// 如果找到匹配的密钥，添加到结果列表中
-		if match {
-			keyString := utils.BitsToString(keyBits)
-			foundKeys = append(foundKeys, keyString)
-			foundKeysDecimal = append(foundKeysDecimal, i)
-			log.Printf("找到匹配密钥：%s（十进制：%d）", keyString, i)
-		}
+			mu.Lock()
+			foundKeys = append(foundKeys, localKeys...)
+			foundKeysDecimal = append(foundKeysDecimal, localKeysDecimal...)
+			mu.Unlock()
+		}(start, end)
 	}
+
+	wg.Wait()
 	var endTime = time.Now()
 	var duration = endTime.Sub(startTime)
 	var timeString = fmt.Sprintf("%.2fms", float64(duration.Nanoseconds())/1000000)

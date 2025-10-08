@@ -36,7 +36,7 @@
 
 在明文为`Iloveyou`，密钥为`1111111111`的加密，解密结果如下。
 
-![image-20250930143415646](doc/assets/image-20250930143415646.png)
+![image-20251008125646667](doc/assets/image-20251008125646667.png)
 
 
 
@@ -74,8 +74,12 @@ Web显示：
 - **启动后端**：在项目根目录运行 `go run main.go`
 - **打开前端**：浏览器访问 `http://localhost:8080`
 - **核心接口**：
-  - `POST /api/encrypt`：`{"plaintext":"8位","key":"10位"}` 或 `{"plaintext_ascii":"文本","key":"10位"}`
-  - `POST /api/decrypt`：`{"ciphertext":"8位","key":"10位"}` 或 `{"ciphertext_ascii":"文本","key":"10位"}`
+  - `POST /api/encrypt`
+    - 二进制模式：`{"plaintext":"8位","key":"10位"}`，响应 `ciphertext_binary`
+    - ASCII 模式：`{"plaintext_ascii":"文本","key":"10位"}`，响应 `ciphertext_base64`
+  - `POST /api/decrypt`
+    - 二进制模式：`{"ciphertext":"8位","key":"10位"}`，响应 `plaintext`
+    - ASCII 模式：`{"ciphertext_base64":"Base64","key":"10位"}`，响应 `plaintext_ascii`
   - `POST /api/blasting`：`{"plaintext":"8位","ciphertext":"8位"}` 返回所有可能密钥及耗时
 
 
@@ -135,21 +139,21 @@ SDES/
 ├── doc/             # 项目文档图片地址
 ├── router/          # 路由注册
 ├── utils/           # S-DES 算法与工具函数
-└── static/          # 前端静态资源
+└── static/          # 静态资源
 ```
 
 
 
 ## 后端流程图
 
-1. **接收请求**：`controller` 绑定 JSON，识别二进制或 ASCII 字段。
+1. **接收请求**：`controller` 绑定 JSON，识别二进制或 Base64/ASCII 字段。
 2. **数据校验**：校验 10 位二进制密钥与输入不能为空；ASCII 超出范围直接报错。
-3. **数据转换**：字符串转字节，调用 `utils.StringToBits` 生成密钥位数组。
+3. **数据转换**：字符串转字节，ASCII 模式使用 Base64 ↔ 字节转换；调用 `utils.StringToBits` 生成密钥位数组。
 4. **算法处理**：逐字节执行 `utils.Encrypt` / `utils.Decrypt`，得到新字节序列。
-5. **结果封装**：字节转回二进制或 ASCII 字符串，返回 JSON 响应（含成功标记与耗时等信息）。
+5. **结果封装**：按模式返回 `ciphertext_base64` 或 `ciphertext_binary` / `plaintext`，附带执行状态与耗时。
 
 ```
-请求 JSON → 参数校验 → 字符串/位转换 → S-DES 处理 → JSON 响应
+请求 JSON → 参数校验 → ASCII/Base64 ↔ 字节转换 → S-DES 处理 → JSON 响应
 ```
 
 ## 参考资料

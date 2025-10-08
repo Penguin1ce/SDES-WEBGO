@@ -1,10 +1,10 @@
 package response
 
 type EncryptResponse struct {
-	Ciphertext      string `json:"ciphertext,omitempty"`
-	CiphertextASCII string `json:"ciphertext_ascii,omitempty"`
-	Success         bool   `json:"success"`
-	Message         string `json:"message,omitempty"`
+	CiphertextBinary string `json:"ciphertext_binary,omitempty"`
+	CiphertextBase64 string `json:"ciphertext_base64,omitempty"`
+	Success          bool   `json:"success"`
+	Message          string `json:"message,omitempty"`
 }
 
 type DecryptResponse struct {

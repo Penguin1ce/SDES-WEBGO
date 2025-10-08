@@ -12,19 +12,19 @@ function validateBinaryInput(value, length) {
 function toggleInputMode(formId, mode) {
     const isEncrypt = formId === 'encryptForm';
     const binaryInput = document.getElementById(isEncrypt ? 'plaintext' : 'ciphertext');
-    const asciiInput = document.getElementById(isEncrypt ? 'plaintextASCII' : 'ciphertextASCII');
+    const altInput = document.getElementById(isEncrypt ? 'plaintextASCII' : 'ciphertextBase64');
     const label = binaryInput.previousElementSibling;
 
     if (mode === 'ascii') {
         binaryInput.style.display = 'none';
         binaryInput.value = '';
-        asciiInput.style.display = 'block';
-        asciiInput.value = '';
-        asciiInput.focus();
-        label.textContent = isEncrypt ? '明文 (ASCII 字符):' : '密文 (ASCII 字符):';
+        altInput.style.display = 'block';
+        altInput.value = '';
+        altInput.focus();
+        label.textContent = isEncrypt ? '明文 (ASCII 字符):' : '密文 (Base64):';
     } else {
-        asciiInput.style.display = 'none';
-        asciiInput.value = '';
+        altInput.style.display = 'none';
+        altInput.value = '';
         binaryInput.style.display = 'block';
         binaryInput.value = '';
         binaryInput.focus();
@@ -32,7 +32,7 @@ function toggleInputMode(formId, mode) {
     }
 }
 
-function buildAsciiMessage(label, content) {
+function buildTextResult(label, content) {
     const container = document.createElement('div');
 
     const createBlock = (title, text, type, lengthMeta) => {
@@ -238,11 +238,12 @@ function bindEncryptForm() {
             const data = await response.json();
 
             if (data.success) {
-            if (data.ciphertext_ascii) {
-                showResult('encryptResult', buildAsciiMessage('ASCII 密文', data.ciphertext_ascii), true);
-            } else {
-                showResult('encryptResult', `密文: ${data.ciphertext}`, true);
-            }
+                if (data.ciphertext_base64) {
+                    showResult('encryptResult', buildTextResult('Base64 密文', data.ciphertext_base64), true);
+                } else {
+                    const binary = data.ciphertext_binary || data.ciphertext;
+                    showResult('encryptResult', `密文: ${binary ?? '未知'}`, true);
+                }
             } else {
                 showResult('encryptResult', `错误: ${data.message}`, false);
             }
@@ -260,7 +261,7 @@ function bindDecryptForm() {
         e.preventDefault();
 
         const ciphertext = document.getElementById('ciphertext');
-        const ciphertextASCII = document.getElementById('ciphertextASCII');
+        const ciphertextBase64 = document.getElementById('ciphertextBase64');
         const key = document.getElementById('decryptKey');
         const mode = document.querySelector('input[name="decryptMode"]:checked').value;
 
@@ -274,12 +275,12 @@ function bindDecryptForm() {
         const payload = { key: keyValue };
 
         if (mode === 'ascii') {
-            const asciiValue = ciphertextASCII.value;
-            if (!asciiValue) {
-                showResult('decryptResult', '密文错误: ASCII 文本不能为空', false);
+            const base64Value = ciphertextBase64.value.trim();
+            if (!base64Value) {
+                showResult('decryptResult', '密文错误: Base64 文本不能为空', false);
                 return;
             }
-            payload.ciphertext_ascii = asciiValue;
+            payload.ciphertext_base64 = base64Value;
         } else {
             const binaryValue = ciphertext.value.trim();
             const ciphertextError = validateBinaryInput(binaryValue, 8);
@@ -305,7 +306,7 @@ function bindDecryptForm() {
 
             if (data.success) {
                 if (data.plaintext_ascii) {
-                    showResult('decryptResult', buildAsciiMessage('ASCII 明文', data.plaintext_ascii), true);
+                    showResult('decryptResult', buildTextResult('ASCII 明文', data.plaintext_ascii), true);
                 } else {
                     showResult('decryptResult', `明文: ${data.plaintext}`, true);
                 }

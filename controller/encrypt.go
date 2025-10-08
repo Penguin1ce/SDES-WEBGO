@@ -4,6 +4,7 @@ import (
 	"SDES/dto/request"
 	"SDES/dto/response"
 	"SDES/utils"
+	"encoding/base64"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -56,10 +57,11 @@ func EncryptHandler(c *gin.Context) {
 		}
 
 		ciphertextBytes := utils.EncryptBytes(plaintextBytes, keyBits)
+		ciphertextBase64 := base64.StdEncoding.EncodeToString(ciphertextBytes)
 
 		c.JSON(http.StatusOK, response.EncryptResponse{
-			CiphertextASCII: utils.BytesToASCIIString(ciphertextBytes),
-			Success:         true,
+			CiphertextBase64: ciphertextBase64,
+			Success:          true,
 		})
 		return
 	}
@@ -81,7 +83,7 @@ func EncryptHandler(c *gin.Context) {
 	ciphertext := utils.BitsToString(ciphertextBits)
 
 	c.JSON(http.StatusOK, response.EncryptResponse{
-		Ciphertext: ciphertext,
-		Success:    true,
+		CiphertextBinary: ciphertext,
+		Success:          true,
 	})
 }

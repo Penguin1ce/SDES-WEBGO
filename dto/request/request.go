@@ -2,9 +2,9 @@ package request
 
 // DecryptRequest API 请求结构体
 type DecryptRequest struct {
-	Ciphertext      string  `json:"ciphertext"`
-	CiphertextASCII *string `json:"ciphertext_ascii"`
-	Key             string  `json:"key" binding:"required"`
+	Ciphertext       string  `json:"ciphertext"`
+	CiphertextBase64 *string `json:"ciphertext_base64"`
+	Key              string  `json:"key" binding:"required"`
 }
 
 // EncryptRequest API 请求结构体

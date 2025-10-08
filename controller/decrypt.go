@@ -4,6 +4,7 @@ import (
 	"SDES/dto/request"
 	"SDES/dto/response"
 	"SDES/utils"
+	"encoding/base64"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -19,10 +20,10 @@ func DecryptHandler(c *gin.Context) {
 		return
 	}
 
-	if req.Ciphertext == "" && req.CiphertextASCII == nil {
+	if req.Ciphertext == "" && req.CiphertextBase64 == nil {
 		c.JSON(http.StatusBadRequest, response.DecryptResponse{
 			Success: false,
-			Message: "必须提供二进制密文或 ASCII 密文",
+			Message: "必须提供二进制密文或 Base64 密文",
 		})
 		return
 	}
@@ -37,19 +38,19 @@ func DecryptHandler(c *gin.Context) {
 
 	keyBits := utils.StringToBits(req.Key, 10)
 
-	if req.CiphertextASCII != nil {
-		ciphertextBytes, err := utils.ASCIIStringToBytes(*req.CiphertextASCII)
+	if req.CiphertextBase64 != nil {
+		ciphertextBytes, err := base64.StdEncoding.DecodeString(*req.CiphertextBase64)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, response.DecryptResponse{
 				Success: false,
-				Message: err.Error(),
+				Message: "Base64 密文解析失败",
 			})
 			return
 		}
 		if len(ciphertextBytes) == 0 {
 			c.JSON(http.StatusBadRequest, response.DecryptResponse{
 				Success: false,
-				Message: "ASCII 密文不能为空",
+				Message: "Base64 密文不能为空",
 			})
 			return
 		}
